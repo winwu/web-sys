@@ -45,6 +45,7 @@ public class NewsController {
 
             news = pageResult.getContent();
             Map<String, Object> response = new HashMap<>();
+            response.put("code", "SUCCESS");
             response.put("data", news);
             response.put("currentPage", pageResult.getNumber());
             response.put("totalRecords", pageResult.getTotalElements());
@@ -70,36 +71,60 @@ public class NewsController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ResponseEntity get(@PathVariable("id") Integer id) {
+        Map<String, Object> response = new HashMap<>();
+
         if (repository.existsById(Long.valueOf(id))) {
             News news = repository.findById(id);
-            return ResponseEntity.ok().body(news);
+            response.put("code", "SUCCESS");
+            response.put("data", news);
         } else {
-            // 404
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+            response.put("code", "FAILURE");
+            response.put("message", HttpStatus.NOT_FOUND);
         }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public String add(@RequestBody News news) {
-        repository.save(news);
-        return "success";
+    public ResponseEntity add(@RequestBody News news) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            repository.save(news);
+            response.put("code", "SUCCESS");
+        } catch(Exception e) {
+            response.put("code", "FAILURE");
+            response.put("message", e.getMessage());
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public String update(@RequestBody News news) {
-        // @TODO
+    public ResponseEntity update(@RequestBody News news) {
         // 判斷 id 是存在的，否則會變成 create 一新的
-        repository.save(news);
-        return "success";
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            repository.save(news);
+            response.put("code", "SUCCESS");
+        } catch(Exception e) {
+            response.put("code", "FAILURE");
+            response.put("message", e.getMessage());
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public String delete(@PathVariable("id") long id) {
+    public ResponseEntity delete(@PathVariable("id") long id) {
+        Map<String, Object> response = new HashMap<>();
+
         if (repository.existsById(id)) {
             repository.deleteById(id);
-            return "success";
+            response.put("code", "SUCCESS");
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
-            return "id not found";
+            response.put("code", "FAILURE");
+            response.put("message", "Id not exists");
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
