@@ -15,11 +15,12 @@ public class News {
     private long id;
 
     @Column(nullable = false, columnDefinition = "varchar(255)")
-//    @NotEmpty(message = "Title can't be null")
+    @NotEmpty(message = "Title can't be null")
     private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-//    @NotEmpty(message = "Content can't be null")
+    @NotEmpty(message = "Content can't be null")
+
     private String content;
 
     @Column(columnDefinition = "TEXT")

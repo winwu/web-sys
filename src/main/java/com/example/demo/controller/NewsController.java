@@ -11,10 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/news")
@@ -87,16 +86,33 @@ public class NewsController {
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity add(@RequestBody News news) {
-
         Map<String, Object> response = new HashMap<>();
+
         try {
             repository.save(news);
             response.put("code", "SUCCESS");
-        } catch(Exception e) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (Exception e) {
             response.put("code", "FAILURE");
-            response.put("message", e.getMessage());
+
+            if (e instanceof ConstraintViolationException) {
+                ConstraintViolationException jdbcEx = (ConstraintViolationException) e;
+                Set<ConstraintViolation<?>> constraintViolations = jdbcEx.getConstraintViolations();
+
+                Map<String, String> errors = new HashMap<>();
+
+                for (Iterator<ConstraintViolation<?>> iterator = constraintViolations.iterator(); iterator.hasNext(); ) {
+                    ConstraintViolation<?> next = iterator.next();
+                    errors.put(String.valueOf(next.getPropertyPath()), next.getMessage());
+                }
+                response.put("errors", errors);
+            } else {
+                response.put("message", e.getMessage());
+            }
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
@@ -107,7 +123,7 @@ public class NewsController {
         try {
             repository.save(news);
             response.put("code", "SUCCESS");
-        } catch(Exception e) {
+        } catch (Exception e) {
             response.put("code", "FAILURE");
             response.put("message", e.getMessage());
         }
