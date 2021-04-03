@@ -80,6 +80,7 @@ public class NewsController {
         } else {
             response.put("code", "FAILURE");
             response.put("message", HttpStatus.NOT_FOUND);
+            response.put("data", null);
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
