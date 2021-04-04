@@ -25,4 +25,8 @@ public class News {
 
     @Column(columnDefinition = "TEXT")
     private String image;
+
+    public String getImage() {
+        return "TODO append folder path" + this.image;
+    }
 }

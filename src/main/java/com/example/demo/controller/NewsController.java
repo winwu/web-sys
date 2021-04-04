@@ -10,15 +10,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/news")
 public class NewsController {
-
     @Autowired
     private NewsRepository repository;
 
@@ -84,11 +89,46 @@ public class NewsController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    private String saveFiles(MultipartFile file) throws IOException {
+        Long currentTime = System.currentTimeMillis();
+        String newName = currentTime.toString() + "_" + file.getOriginalFilename();
+
+        byte[] bytes = file.getBytes();
+
+        String uploadDir = "upload/news/";
+        File dir = new File(uploadDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        Path path = Paths.get(uploadDir + newName);
+        Files.write(path, bytes);
+        return newName;
+    }
+
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity add(@RequestBody News news) {
+    public ResponseEntity add(
+            @RequestParam(value = "title") String title,
+            @RequestParam(value = "content") String content,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+
         Map<String, Object> response = new HashMap<>();
 
+        News news = new News();
+        news.setTitle(title);
+        news.setContent(content);
+
+        if (image != null) {
+            try {
+                String newFileName = saveFiles(image);
+                news.setImage(newFileName);
+            } catch(IOException e) {
+                response.put("code", "FAILURE");
+                response.put("message", e.getMessage());
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
+        }
         try {
+
             repository.save(news);
             response.put("code", "SUCCESS");
             return new ResponseEntity<>(response, HttpStatus.OK);
