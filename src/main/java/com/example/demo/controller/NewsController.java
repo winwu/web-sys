@@ -130,18 +130,17 @@ public class NewsController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity delete(@PathVariable("id") long id) {
+    @RequestMapping(value = "/{ids}", method = RequestMethod.DELETE)
+    public ResponseEntity delete(@PathVariable("ids") Long[] ids) {
         Map<String, Object> response = new HashMap<>();
-
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
+        try {
+            repository.deleteByIdIn(Arrays.asList(ids));
             response.put("code", "SUCCESS");
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
+        } catch(Exception e) {
             response.put("code", "FAILURE");
-            response.put("message", "Id not exists");
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            response.put("message", e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 }

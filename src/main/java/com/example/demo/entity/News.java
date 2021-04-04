@@ -25,5 +25,4 @@ public class News {
 
     @Column(columnDefinition = "TEXT")
     private String image;
-
 }
