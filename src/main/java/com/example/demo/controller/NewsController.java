@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.entity.News;
 import com.example.demo.repository.NewsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,9 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/news")
 public class NewsController {
+    @Value("${upload.path}")
+    private String uploadPath;
+
     @Autowired
     private NewsRepository repository;
 
@@ -90,18 +94,20 @@ public class NewsController {
     }
 
     private String saveFiles(MultipartFile file) throws IOException {
+        String newsStorePath = uploadPath + File.separator + "news" + File.separator;
+        if (!new File(newsStorePath).exists()) {
+            new File(newsStorePath).mkdir();
+        }
+        System.out.println("real Path to Uploads = " + newsStorePath);
+
         Long currentTime = System.currentTimeMillis();
         String newName = currentTime.toString() + "_" + file.getOriginalFilename();
 
         byte[] bytes = file.getBytes();
-
-        String uploadDir = "upload/news/";
-        File dir = new File(uploadDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        Path path = Paths.get(uploadDir + newName);
+        String filePath = newsStorePath + newName;
+        Path path = Paths.get(filePath);
         Files.write(path, bytes);
+
         return newName;
     }
 
@@ -110,9 +116,10 @@ public class NewsController {
             @RequestParam(value = "title") String title,
             @RequestParam(value = "content") String content,
             @RequestParam(value = "image", required = false) MultipartFile image) {
-
         Map<String, Object> response = new HashMap<>();
 
+        // https://www.jianshu.com/p/b242e5f807ca
+        // https://modouxiansheng.top/2019/07/19/%E4%B8%8D%E5%AD%A6%E6%97%A0%E6%95%B0-SpringBoot-2.0-%E5%A4%9A%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%8A%A0%E5%9B%9E%E6%98%BE-2019/
         News news = new News();
         news.setTitle(title);
         news.setContent(content);
@@ -121,7 +128,7 @@ public class NewsController {
             try {
                 String newFileName = saveFiles(image);
                 news.setImage(newFileName);
-            } catch(IOException e) {
+            } catch (IOException e) {
                 response.put("code", "FAILURE");
                 response.put("message", e.getMessage());
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -177,7 +184,7 @@ public class NewsController {
             repository.deleteByIdIn(Arrays.asList(ids));
             response.put("code", "SUCCESS");
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch(Exception e) {
+        } catch (Exception e) {
             response.put("code", "FAILURE");
             response.put("message", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
