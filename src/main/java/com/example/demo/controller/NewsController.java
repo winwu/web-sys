@@ -2,6 +2,9 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.News;
 import com.example.demo.repository.NewsRepository;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -30,6 +33,13 @@ public class NewsController {
 
     @Autowired
     private NewsRepository repository;
+
+    @ApiOperation(value = "Retrieve all news list")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "start", value = "start from which index", required = false, defaultValue = "0"),
+            @ApiImplicitParam(name = "limit", value = "how many records after start", required = false, defaultValue = "10"),
+            @ApiImplicitParam(name = "search", value = "search text from title or content field", required = false)
+    })
 
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> newsList(
