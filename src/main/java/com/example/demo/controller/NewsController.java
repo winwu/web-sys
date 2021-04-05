@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.News;
 import com.example.demo.repository.NewsRepository;
+import com.example.demo.service.FileService;
+import com.example.demo.service.impl.FileServiceImpl;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -20,14 +22,13 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/news")
 public class NewsController {
+    FileService fileService = new FileServiceImpl();
+
     @Value("${upload.path}")
     private String uploadPath;
 
@@ -36,11 +37,10 @@ public class NewsController {
 
     @ApiOperation(value = "Retrieve all news list")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "start", value = "start from which index", required = false, defaultValue = "0"),
-            @ApiImplicitParam(name = "limit", value = "how many records after start", required = false, defaultValue = "10"),
-            @ApiImplicitParam(name = "search", value = "search text from title or content field", required = false)
+            @ApiImplicitParam(name = "start", value = "start from which index", defaultValue = "0"),
+            @ApiImplicitParam(name = "limit", value = "how many records after start", defaultValue = "10"),
+            @ApiImplicitParam(name = "search", value = "search text from title or content field")
     })
-
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> newsList(
             @RequestParam(required = false) String search,
@@ -103,24 +103,6 @@ public class NewsController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    private String saveFiles(MultipartFile file) throws IOException {
-        String newsStorePath = uploadPath + File.separator + "news" + File.separator;
-        if (!new File(newsStorePath).exists()) {
-            new File(newsStorePath).mkdir();
-        }
-        System.out.println("real Path to Uploads = " + newsStorePath);
-
-        Long currentTime = System.currentTimeMillis();
-        String newName = currentTime.toString() + "_" + file.getOriginalFilename();
-
-        byte[] bytes = file.getBytes();
-        String filePath = newsStorePath + newName;
-        Path path = Paths.get(filePath);
-        Files.write(path, bytes);
-
-        return newName;
-    }
-
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity add(
             @RequestParam(value = "title") String title,
@@ -132,9 +114,9 @@ public class NewsController {
         news.setTitle(title);
         news.setContent(content);
 
-        if (image != null) {
+        if (image != null && image.getSize() > 0) {
             try {
-                String newFileName = saveFiles(image);
+                String newFileName = fileService.save(uploadPath + File.separator + "news" + File.separator, image);
                 news.setImage(newFileName);
             } catch (IOException e) {
                 response.put("code", "FAILURE");
@@ -142,6 +124,7 @@ public class NewsController {
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
         }
+
         try {
 
             repository.save(news);
