@@ -118,8 +118,6 @@ public class NewsController {
             @RequestParam(value = "image", required = false) MultipartFile image) {
         Map<String, Object> response = new HashMap<>();
 
-        // https://www.jianshu.com/p/b242e5f807ca
-        // https://modouxiansheng.top/2019/07/19/%E4%B8%8D%E5%AD%A6%E6%97%A0%E6%95%B0-SpringBoot-2.0-%E5%A4%9A%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%8A%A0%E5%9B%9E%E6%98%BE-2019/
         News news = new News();
         news.setTitle(title);
         news.setContent(content);
