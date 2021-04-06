@@ -154,9 +154,35 @@ public class NewsController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public ResponseEntity update(@RequestBody News news) {
-        // 判斷 id 是存在的，否則會變成 create 一新的
+    public ResponseEntity update(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "title") String title,
+            @RequestParam(value = "content") String content,
+            @RequestParam(value = "isDeleteImage", required = false) String isDeleteImage,
+            @RequestParam(value = "image", required = false) MultipartFile image
+    ) {
         Map<String, Object> response = new HashMap<>();
+        News news = repository.getOne(id);
+
+        // @TODO: why content and title can't set to null?
+        // The error will be: "Could not commit JPA transaction; nested exception is javax.persistence.RollbackException: Error while committing the transaction"
+        news.setTitle(title);
+        news.setContent(content);
+
+        if (isDeleteImage != null && isDeleteImage.equals("1")) {
+            news.setImage(null);
+        } else {
+            if (image != null && image.getSize() > 0) {
+                try {
+                    String newFileName = fileService.save(uploadPath + File.separator + "news" + File.separator, image);
+                    news.setImage(newFileName);
+                } catch (IOException e) {
+                    response.put("code", "FAILURE");
+                    response.put("message", e.getMessage());
+                    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
 
         try {
             repository.save(news);
@@ -165,6 +191,7 @@ public class NewsController {
             response.put("code", "FAILURE");
             response.put("message", e.getMessage());
         }
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
