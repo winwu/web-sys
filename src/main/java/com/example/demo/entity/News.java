@@ -1,15 +1,15 @@
 package com.example.demo.entity;
 
 import lombok.Data;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+
 
 @Entity
 @Table(name = "news")
 @Data
 
-public class News {
+public class News extends CommonEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
