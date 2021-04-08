@@ -27,6 +27,10 @@ public class News {
     private String image;
 
     public String getImage() {
-        return "TODO append folder path" + this.image;
+        if (this.image != null) {
+            return "TODO append folder path" + this.image;
+        } else {
+            return null;
+        }
     }
 }

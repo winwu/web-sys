@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import com.example.demo.entity.News;
 import com.example.demo.repository.NewsRepository;
 import com.example.demo.service.FileService;
-import com.example.demo.service.impl.FileServiceImpl;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -27,7 +26,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/news")
 public class NewsController {
-    FileService fileService = new FileServiceImpl();
+    @Autowired
+    FileService fileService;
 
     @Value("${upload.path}")
     private String uploadPath;

@@ -1,8 +1,7 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.service.FileService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -13,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+@Service
 public class FileServiceImpl implements FileService {
     @Override
     public String save(String dirPath, MultipartFile file) throws IOException {
