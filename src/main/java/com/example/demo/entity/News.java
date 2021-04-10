@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import lombok.Data;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 
@@ -20,7 +21,6 @@ public class News extends CommonEntity {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     @NotEmpty(message = "Content can't be null")
-
     private String content;
 
     @Column(columnDefinition = "TEXT")

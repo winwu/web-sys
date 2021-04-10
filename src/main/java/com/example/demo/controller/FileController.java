@@ -35,7 +35,7 @@ public class FileController {
             headers.setContentLength((Long) result.get("size"));
             return new ResponseEntity(result.get("data"), headers, HttpStatus.OK);
 
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.out.println("FileController error");
             System.out.println(e);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

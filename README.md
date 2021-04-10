@@ -15,3 +15,8 @@ Setup:
 
 1. access `http://localhost:{YOUR_PORT}/swagger-ui.html`
 
+
+TODO
+
+https://stackoverflow.com/questions/51218227/user-class-for-spring-security-application
+https://howtodoinjava.com/spring-security/custom-userdetailsservice-example-for-spring-3-security/
