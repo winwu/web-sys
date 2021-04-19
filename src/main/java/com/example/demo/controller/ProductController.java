@@ -20,6 +20,7 @@ import javax.validation.ConstraintViolationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/products")
@@ -152,6 +153,7 @@ public class ProductController {
             @RequestParam(value = "subTitle") String subTitle,
             @RequestParam(value = "isPublished") Integer isPublished,
             @RequestParam(value = "isFeature") Integer isFeature,
+            @RequestParam(value = "specs", required = false) String specs,
             @RequestParam(value = "bannerImg", required = false) MultipartFile bannerImg,
             @RequestParam(value = "coverImg", required = false) MultipartFile coverImg,
             @RequestParam(value = "isDeleteBanner", required = false) String isDeleteBanner,
@@ -187,6 +189,39 @@ public class ProductController {
 
         try {
             repository.save(product);
+
+            // handle specs
+            if (specs == null) {
+                // if specs doesn't exists, delete all
+                productSpecRepository.deleteByProductId(product.getId());
+            } else {
+                // create or update or delete specs
+                Gson gson = new Gson();
+                ProductSpecs[] requestSpecs = gson.fromJson(specs, ProductSpecs[].class);
+                System.out.println("requestSpecs:" + requestSpecs.toString());
+
+                // 先處理新增的部分
+                List<ProductSpecs> added = Arrays.stream(requestSpecs).filter(f -> f.getId() <= 0).collect(Collectors.toList());
+                for (ProductSpecs s : added) {
+                    s.setProduct(product);
+                }
+                productSpecRepository.saveAll(added);
+
+                // 比較要刪除以及更新的部分
+                List<ProductSpecs> existedSpecInDB = productSpecRepository.findByProductId(product.getId());
+                if (existedSpecInDB.size() > 0) {
+                    for (ProductSpecs s : existedSpecInDB) {
+                        long currentId = s.getId();
+                        ProductSpecs existsInRequest = Arrays.stream(requestSpecs).filter(f -> f.getId() == currentId).findFirst().orElse(null);
+                        if (existsInRequest != null) {
+                            existsInRequest.setProduct(product);
+                            productSpecRepository.save(existsInRequest);
+                        } else {
+                            productSpecRepository.deleteById(currentId);
+                        }
+                    }
+                }
+            }
             response.put("code", "SUCCESS");
         } catch (Exception e) {
             response.put("code", "FAILURE");

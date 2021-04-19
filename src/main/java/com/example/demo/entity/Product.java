@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -42,5 +43,15 @@ public class Product extends CommonEntity {
     @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "product")
     @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<ProductSpecs> specs;
+
+//    @Override
+//    public String toString() {
+//        return "Product{" +
+//                "id=" + id +
+//                ", title='" + title + '\'' +
+//                ", subTitle=" + subTitle +
+//                '}';
+//    }
 }
