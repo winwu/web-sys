@@ -1,10 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.User;
-import com.example.demo.exception.CustomException;
 import com.example.demo.service.impl.UserServiceImpl;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.Authorization;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,44 +15,34 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
+@Api(tags = "users")
 public class UserController {
 
     @Autowired
     private UserServiceImpl userService;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @ApiResponses(value = {
+            @ApiResponse(code = 400, message = "Something went wrong, maybe missing RequestParams"),
+            @ApiResponse(code = 422, message = "Missing username or password")
+    })
     public ResponseEntity<Map<String, Object>> login(@RequestParam String username, @RequestParam String password) {
-
         Map<String, Object> response = new HashMap<>();
-
-        try {
-            String token = userService.login(username, password);
-            response.put("code", HttpStatus.OK.value());
-            response.put("token", token);
-            response.put("message", "登入成功");
-            return new ResponseEntity(response, HttpStatus.OK);
-
-        } catch (CustomException e) {
-            response.put("code", e.getHttpStatus().value());
-            response.put("message", e.getMessage());
-            return new ResponseEntity(response, e.getHttpStatus());
-        }
+        String token = userService.login(username, password);
+        response.put("code", HttpStatus.OK.value());
+        response.put("token", token);
+        response.put("message", "登入成功");
+        return new ResponseEntity(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     public ResponseEntity signup(@RequestBody User user) {
         Map<String, Object> response = new HashMap<>();
-        try {
-            String token = userService.signup(user);
-            response.put("code", HttpStatus.OK.value());
-            response.put("token", token);
-            response.put("message", "註冊成功");
-            return new ResponseEntity(response, HttpStatus.OK);
-        } catch (CustomException e) {
-            response.put("code", e.getHttpStatus().value());
-            response.put("message", e.getMessage());
-            return new ResponseEntity(response, e.getHttpStatus());
-        }
+        String token = userService.signup(user);
+        response.put("code", HttpStatus.OK.value());
+        response.put("token", token);
+        response.put("message", "註冊成功");
+        return new ResponseEntity(response, HttpStatus.OK);
     }
 
     @ApiOperation(value = "delete", authorizations = {@Authorization(value = "apiKey")})

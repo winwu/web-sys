@@ -17,8 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -91,16 +89,18 @@ public class NewsController {
     public ResponseEntity get(@PathVariable("id") Integer id) {
         Map<String, Object> response = new HashMap<>();
 
+
         if (repository.existsById(Long.valueOf(id))) {
             News news = repository.findById(id);
             response.put("code", "SUCCESS");
             response.put("data", news);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
-            response.put("code", "FAILURE");
-            response.put("message", HttpStatus.NOT_FOUND);
-            response.put("data", null);
+//            response.put("code", "FAILURE");
+//            response.put("message", HttpStatus.NOT_FOUND);
+//            response.put("data", null);
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
@@ -125,32 +125,9 @@ public class NewsController {
             }
         }
 
-        try {
-
-            repository.save(news);
-            response.put("code", "SUCCESS");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-
-        } catch (Exception e) {
-            response.put("code", "FAILURE");
-
-            if (e instanceof ConstraintViolationException) {
-                ConstraintViolationException jdbcEx = (ConstraintViolationException) e;
-                Set<ConstraintViolation<?>> constraintViolations = jdbcEx.getConstraintViolations();
-
-                Map<String, String> errors = new HashMap<>();
-
-                for (Iterator<ConstraintViolation<?>> iterator = constraintViolations.iterator(); iterator.hasNext(); ) {
-                    ConstraintViolation<?> next = iterator.next();
-                    errors.put(String.valueOf(next.getPropertyPath()), next.getMessage());
-                }
-                response.put("errors", errors);
-            } else {
-                response.put("message", e.getMessage());
-            }
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-
+        repository.save(news);
+        response.put("code", "SUCCESS");
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)

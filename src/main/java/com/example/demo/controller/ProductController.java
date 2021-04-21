@@ -110,40 +110,21 @@ public class ProductController {
 //            }
 //        }
 
-        try {
-            product = repository.save(product);
 
-            if (specs != null) {
-                Gson gson = new Gson();
-                ProductSpecs[] specsArray = gson.fromJson(specs, ProductSpecs[].class);
-                for (ProductSpecs spec : specsArray) {
-                    spec.setProduct(product);
-                    System.out.println(spec);
-                    productSpecRepository.save(spec);
-                }
+        product = repository.save(product);
+
+        if (specs != null) {
+            Gson gson = new Gson();
+            ProductSpecs[] specsArray = gson.fromJson(specs, ProductSpecs[].class);
+            for (ProductSpecs spec : specsArray) {
+                spec.setProduct(product);
+                System.out.println(spec);
+                productSpecRepository.save(spec);
             }
-
-            response.put("code", "SUCCESS");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            response.put("code", "FAILURE");
-
-            if (e instanceof ConstraintViolationException) {
-                ConstraintViolationException jdbcEx = (ConstraintViolationException) e;
-                Set<ConstraintViolation<?>> constraintViolations = jdbcEx.getConstraintViolations();
-
-                Map<String, String> errors = new HashMap<>();
-
-                for (Iterator<ConstraintViolation<?>> iterator = constraintViolations.iterator(); iterator.hasNext(); ) {
-                    ConstraintViolation<?> next = iterator.next();
-                    errors.put(String.valueOf(next.getPropertyPath()), next.getMessage());
-                }
-                response.put("errors", errors);
-            } else {
-                response.put("message", e.getMessage());
-            }
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
+
+        response.put("code", "SUCCESS");
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
