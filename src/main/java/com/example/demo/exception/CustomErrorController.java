@@ -1,6 +1,7 @@
 package com.example.demo.exception;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -24,9 +25,8 @@ public class CustomErrorController implements ErrorController {
     @Autowired
     private ErrorAttributes errorAttributes;
 
-
-    // @TODO: add debug in application.properties, and change the ErrorAttributeOptions accordingly
-    // private boolean debug = true;
+    @Value("${debug}")
+    private boolean debug;
 
     @Override
     public String getErrorPath() {
@@ -35,17 +35,26 @@ public class CustomErrorController implements ErrorController {
 
     private Map<String, Object> getErrorFromAttr(HttpServletRequest req, WebRequest webRequest) {
         RequestAttributes reqAttributes = new ServletRequestAttributes(req);
-        // @TODO: remove path, timestamp in response
         return errorAttributes.getErrorAttributes(webRequest, ErrorAttributeOptions.of(ErrorAttributeOptions.Include.EXCEPTION,
                 ErrorAttributeOptions.Include.STACK_TRACE, ErrorAttributeOptions.Include.MESSAGE, ErrorAttributeOptions.Include.BINDING_ERRORS));
     }
 
     @RequestMapping(value = PATH)
     public ResponseEntity errorResponse(HttpServletRequest request, WebRequest webRequest, HttpServletResponse response) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("code", response.getStatus());
-        error.put("error", getErrorFromAttr(request, webRequest));
-        return new ResponseEntity(error, HttpStatus.valueOf(response.getStatus()));
+        Map<String, Object> customResponse = new HashMap<>();
+        customResponse.put("code", response.getStatus());
+
+        Map<String, Object> errorAttributes = getErrorFromAttr(request, webRequest);
+
+        if (!this.debug) {
+            // use Collection.removeIf ?
+            errorAttributes.remove("path");
+            errorAttributes.remove("timestamp");
+        }
+
+        customResponse.put("error", errorAttributes);
+
+        return new ResponseEntity(customResponse, HttpStatus.valueOf(response.getStatus()));
     }
 
 }
