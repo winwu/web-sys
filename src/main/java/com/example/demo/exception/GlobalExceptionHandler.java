@@ -2,6 +2,7 @@ package com.example.demo.exception;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -75,6 +76,19 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 400 - Bad Request - Constraint violation
+     * 利如: unique 的欄位出現重複，像是註冊重複的 email 會收到這樣的 error
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public Map<String, Object> handleDataIntegrityViolationExceptionException(DataIntegrityViolationException e) {
+        logger.error("請求參數有可能已經存在於 Database", e);
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", 400);
+        response.put("message", "Constraint violation occurred. Cannot insert the same record twice");
+        return response;
+    }
+
+    /**
      * 403 - Forbidden
      */
 //    @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -116,8 +130,6 @@ public class GlobalExceptionHandler {
     // public void handleCustomException(HttpServletResponse res, CustomException e) throws IOException {
     //     res.sendError(e.getHttpStatus().value(), e.getMessage());
     // }
-
-    // @TODO: handle DataIntegrityViolationException
 
     /**
      * 500 && Others - Internal Server Error and other exceptions

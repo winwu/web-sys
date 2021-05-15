@@ -43,12 +43,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String signup(User user) {
-        if (!userRepository.existsByUsername(user.getUsername())) {
+        if (!userRepository.existsByUsernameOrEmail(user.getUsername(), user.getEmail())) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
             return jwtTokenProvider.createToken(user.getUsername(), user.getRoles());
         } else {
-            throw new CustomException("username is already exist", HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new CustomException("Sorry, username or email is already exist", HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
 
