@@ -4,6 +4,7 @@ import com.example.demo.entity.Role;
 import com.example.demo.exception.CustomException;
 import com.example.demo.service.UserSecurityService;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -13,31 +14,29 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
+    static final String TOKEN_PREFIX = "Bearer";
+    static final Key key = MacProvider.generateKey();
 
     /**
      * tmp secret-key, just for demo
      * the secret-key should store in server config
+     *
+     * @Value("${security.jwt.token.secret-key}") private String secretKey;
      */
-    @Value("${security.jwt.token.secret-key}")
-    private String secretKey;
 
     @Value("${security.jwt.token.expire-length}")
-    private long validInMilliseconds;
+    private long EXPIRATION_TIME;
 
     @Autowired
     private UserSecurityService myUserDetails;
 
-    @PostConstruct
-    protected void init() {
-        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
-    }
 
     public String createToken(String username, List<Role> roles) {
         Claims claims = Jwts.claims().setSubject(username);
@@ -47,18 +46,18 @@ public class JwtTokenProvider {
                 .collect(Collectors.toList()));
 
         Date now = new Date();
-        Date validity = new Date(now.getTime() + validInMilliseconds);
+        Date validity = new Date(now.getTime() + EXPIRATION_TIME);
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
+                // 在 payload 放入 exp
                 .setExpiration(validity)
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(SignatureAlgorithm.HS256, key)
                 .compact();
     }
 
-
     public String getUsername(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody().getSubject();
     }
 
     public Authentication getAuthentication(String token) {
@@ -68,7 +67,8 @@ public class JwtTokenProvider {
 
     public String resolveToken(HttpServletRequest req) {
         String bearerToken = req.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+        // 去掉 Bearer
+        if (bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX + " ")) {
             return bearerToken.substring(7);
         }
         return null;
@@ -76,7 +76,7 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            Jwts.parser().setSigningKey(key).parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             throw new CustomException("Expired or invalid jwt token", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -84,7 +84,11 @@ public class JwtTokenProvider {
     }
 
     public Map<String, Object> parseToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parser()
+                // 驗證
+                .setSigningKey(key)
+                .parseClaimsJws(token)
+                .getBody();
         return claims.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
