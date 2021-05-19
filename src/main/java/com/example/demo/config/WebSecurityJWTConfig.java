@@ -38,7 +38,7 @@ public class WebSecurityJWTConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/users/login").permitAll()
                 .antMatchers("/users/signup").permitAll()
-                .antMatchers("/api/news/**").permitAll()
+                .antMatchers("/api/news").permitAll()
                 // swagger related
                 .antMatchers("/swagger-resources/**").permitAll()
                 .antMatchers("/v2/api-docs").permitAll()
