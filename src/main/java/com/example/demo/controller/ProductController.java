@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Product;
 import com.example.demo.entity.ProductSpecs;
+import com.example.demo.exception.CustomException;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ProductSpecRepository;
 import com.google.gson.Gson;
@@ -15,10 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,18 +64,14 @@ public class ProductController {
     @RequestMapping(value = "{id}", method = RequestMethod.GET)
     public ResponseEntity get(@PathVariable("id") Integer id) {
         Map<String, Object> response = new HashMap<>();
-        if (repository.existsById(Long.valueOf(id))) {
-            Product product = repository.findById(id);
-            response.put("code", "SUCCESS");
-            response.put("data", product);
-        } else {
-            response.put("code", "FAILURE");
-            response.put("message", HttpStatus.NOT_FOUND);
-            response.put("data", null);
-        }
+
+        Product product = repository
+                .findById(Long.valueOf(id))
+                .orElseThrow(() -> new CustomException("Not found", HttpStatus.NOT_FOUND));
+        response.put("code", "SUCCESS");
+        response.put("data", product);
         return new ResponseEntity(response, HttpStatus.OK);
     }
-
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity add(
