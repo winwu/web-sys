@@ -4,7 +4,6 @@ import com.example.demo.entity.Role;
 import com.example.demo.exception.CustomException;
 import com.example.demo.service.UserSecurityService;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -15,21 +14,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
-import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
     static final String TOKEN_PREFIX = "Bearer";
-    static final Key key = MacProvider.generateKey();
 
-    /**
-     * tmp secret-key, just for demo
-     * the secret-key should store in server config
-     *
-     * @Value("${security.jwt.token.secret-key}") private String secretKey;
-     */
+    @Value("${security.jwt.token.secret-key}")
+    private String key;
 
     @Value("${security.jwt.token.expire-length}")
     private long EXPIRATION_TIME;
