@@ -1,11 +1,10 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.News;
+import com.example.demo.exception.CustomException;
 import com.example.demo.repository.NewsRepository;
 import com.example.demo.service.FileService;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -14,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,7 +45,6 @@ public class NewsController {
             @RequestParam(value = "start", defaultValue = "0") Integer start,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
 
-        // @TODO: sort 改為日期
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
         try {
@@ -85,25 +84,24 @@ public class NewsController {
     //    }
 
 
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = ""),
+            @ApiResponse(code = 404, message = "Entity not found")
+    })
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ResponseEntity get(@PathVariable("id") Integer id) {
         Map<String, Object> response = new HashMap<>();
 
-
-        if (repository.existsById(Long.valueOf(id))) {
-            News news = repository.findById(id);
-            response.put("code", "SUCCESS");
-            response.put("data", news);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-//            response.put("code", "FAILURE");
-//            response.put("message", HttpStatus.NOT_FOUND);
-//            response.put("data", null);
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
+        News news = repository
+                .findById(Long.valueOf(id))
+                .orElseThrow(() -> new CustomException("Not found", HttpStatus.NOT_FOUND));
+        response.put("code", "SUCCESS");
+        response.put("data", news);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity add(
             @RequestParam(value = "title") String title,
             @RequestParam(value = "content") String content,
@@ -119,9 +117,7 @@ public class NewsController {
                 String newFileName = fileService.save(uploadPath + File.separator + "news" + File.separator, image);
                 news.setImage(newFileName);
             } catch (IOException e) {
-                response.put("code", "FAILURE");
-                response.put("message", e.getMessage());
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+                throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -131,6 +127,7 @@ public class NewsController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity update(
             @PathVariable("id") Long id,
             @RequestParam(value = "title") String title,
@@ -139,40 +136,44 @@ public class NewsController {
             @RequestParam(value = "image", required = false) MultipartFile image
     ) {
         Map<String, Object> response = new HashMap<>();
-        News news = repository.getOne(id);
+        Optional<News> newsOptional = repository.findById(id);
 
-        // @TODO: why content and title can't set to null?
-        // The error will be: "Could not commit JPA transaction; nested exception is javax.persistence.RollbackException: Error while committing the transaction"
-        news.setTitle(title);
-        news.setContent(content);
-
-        if (isDeleteImage != null && isDeleteImage.equals("1")) {
-            news.setImage(null);
-        } else {
-            if (image != null && image.getSize() > 0) {
-                try {
-                    String newFileName = fileService.save(uploadPath + File.separator + "news" + File.separator, image);
-                    news.setImage(newFileName);
-                } catch (IOException e) {
-                    response.put("code", "FAILURE");
-                    response.put("message", e.getMessage());
-                    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-                }
-            }
+        if (newsOptional.isEmpty()) {
+            throw new CustomException("Entity is not exists", HttpStatus.BAD_REQUEST);
         }
 
         try {
+            News news = newsOptional.get();
+            news.setTitle(title);
+            news.setContent(content);
+
+            if (isDeleteImage != null && isDeleteImage.equals("1")) {
+                news.setImage(null);
+            } else {
+                if (image != null && image.getSize() > 0) {
+                    try {
+                        String newFileName = fileService.save(uploadPath + File.separator + "news" + File.separator, image);
+                        news.setImage(newFileName);
+                    } catch (IOException e) {
+                        throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
             repository.save(news);
             response.put("code", "SUCCESS");
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
-            response.put("code", "FAILURE");
-            response.put("message", e.getMessage());
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Delete success"),
+            @ApiResponse(code = 400, message = "Entity is not exists"),
+            @ApiResponse(code = 403, message = "Permission denied")
+    })
     @RequestMapping(value = "/{ids}", method = RequestMethod.DELETE)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity delete(@PathVariable("ids") Long[] ids) {
         Map<String, Object> response = new HashMap<>();
         try {
@@ -180,9 +181,7 @@ public class NewsController {
             response.put("code", "SUCCESS");
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
-            response.put("code", "FAILURE");
-            response.put("message", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            throw new CustomException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }

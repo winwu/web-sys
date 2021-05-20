@@ -6,6 +6,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -77,7 +78,7 @@ public class GlobalExceptionHandler {
 
     /**
      * 400 - Bad Request - Constraint violation
-     * 利如: unique 的欄位出現重複，像是註冊重複的 email 會收到這樣的 error
+     * 例如: unique 的欄位出現重複，像是註冊重複的 email 會收到這樣的 error
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public Map<String, Object> handleDataIntegrityViolationExceptionException(DataIntegrityViolationException e) {
@@ -90,17 +91,17 @@ public class GlobalExceptionHandler {
 
     /**
      * 403 - Forbidden
+     * 例如: @PreAuthorize 權限不足
      */
-//    @ResponseStatus(HttpStatus.FORBIDDEN)
-//    @ExceptionHandler(AccessDeniedException.class)
-//    public Map<String, Object> handleAccessDeniedException(AccessDeniedException e) {
-//        logger.error("403 權限不足", e);
-//        System.out.println(e.getClass());
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("code", 403);
-//        response.put("message", e.getMessage());
-//        return response;
-//    }
+    @ExceptionHandler(AccessDeniedException.class)
+    public Map<String, Object> handleAccessDeniedException(HttpServletResponse res, AccessDeniedException e) {
+        logger.error("AccessDeniedException 權限不足", e);
+        Map<String, Object> response = new HashMap<>();
+        res.setStatus(403);
+        response.put("code", 403);
+        response.put("message", e.getMessage());
+        return response;
+    }
 
     /**
      * 405 - Method not allowed

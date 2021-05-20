@@ -5,6 +5,7 @@ import com.example.demo.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,7 +39,7 @@ public class WebSecurityJWTConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/users/login").permitAll()
                 .antMatchers("/users/signup").permitAll()
-                .antMatchers("/api/news").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/news/**").permitAll()
                 // swagger related
                 .antMatchers("/swagger-resources/**").permitAll()
                 .antMatchers("/v2/api-docs").permitAll()
@@ -46,8 +47,10 @@ public class WebSecurityJWTConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/webjars/**").permitAll()
                 .anyRequest().authenticated();
 
-        // if user without permission
+        // if user without permission, return http status 403
         // @TODO
+        // 如果要將預設的 response 從 403 改成 401
+        // http.exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
 
         http.apply(new JwtTokenFilterConfigurer(jwtTokenProvider));
 
@@ -58,16 +61,6 @@ public class WebSecurityJWTConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         // allow swagger
-//        web.ignoring().antMatchers("/v2/api-docs/**");
-//        web.ignoring().antMatchers("/swagger.json");
-//        web.ignoring().antMatchers("/swagger-ui.html");
-//        web.ignoring().antMatchers("/swagger-resources/**");
-//        web.ignoring().antMatchers("/webjars/**");
-//
-//        // others...
-//        web.ignoring().antMatchers("/configuration/**");
-//        web.ignoring().antMatchers("/public");
-
         web.ignoring()
                 // swagger related
                 .antMatchers("/swagger-resources/**")
