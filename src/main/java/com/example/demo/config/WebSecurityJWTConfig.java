@@ -17,9 +17,17 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
+
 // 指定為 web security 的設定
 @EnableWebSecurity
-// 啟用安全方法設定
+/**
+ * 啟用安全方法設定:
+ * jsr250Enabled | prePostEnabled | securedEnabled 三種可選
+ *
+ * jsr250Enabled 可以使用: @DenyAll, @RolesAllowed, @PermitAll
+ * prePostEnabled 可以使用: @PreAuthorize, @PostAuthorize, @PreFilter, @PostFilter
+ * securedEnabled 可以使用: @Secured
+ */
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 
 public class WebSecurityJWTConfig extends WebSecurityConfigurerAdapter {

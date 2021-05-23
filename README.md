@@ -26,3 +26,47 @@ After boot this web application, the swagger page is available on  `http://local
 
 https://stackoverflow.com/questions/51218227/user-class-for-spring-security-application
 https://howtodoinjava.com/spring-security/custom-userdetailsservice-example-for-spring-3-security/
+
+## Dump mysql schema
+
+```
+mysqldump -u user -h localhost --no-data -p websys > database.sql
+```
+
+
+## APIs
+
+Request example:
+
+### User
+
+* [POST] /users/signup 
+* [POST] /users/login
+* [GET]  /users/me
+* [GET]  /users/parse
+* [GET]  /users/refresh
+* [DEL]  /users/{USERNAME}
+
+#### [POST] /users/signup
+
+Request Body (application/json)
+
+```json
+{
+    "email": "admin@test.test",
+    "password": "12345678",
+    "roles": [
+      {"id": 2,"name": "ROLE_ADMIN"}
+    ],
+    "username": "admin"
+}
+```
+
+#### [POST] /users/login
+
+RequestParam (application/x-www-form-urlencoded)
+
+```
+username: "admin"
+password: "12345678"
+```

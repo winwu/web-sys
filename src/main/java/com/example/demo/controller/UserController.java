@@ -37,6 +37,7 @@ public class UserController {
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     public ResponseEntity signup(@RequestBody User user) {
+        System.out.println(user);
         Map<String, Object> response = new HashMap<>();
         String token = userService.signup(user);
         response.put("code", HttpStatus.OK.value());

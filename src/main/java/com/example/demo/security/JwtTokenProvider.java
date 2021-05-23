@@ -2,7 +2,7 @@ package com.example.demo.security;
 
 import com.example.demo.entity.Role;
 import com.example.demo.exception.CustomException;
-import com.example.demo.service.UserSecurityService;
+import com.example.demo.service.MyUserDetailService;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,15 +28,23 @@ public class JwtTokenProvider {
     private long EXPIRATION_TIME;
 
     @Autowired
-    private UserSecurityService myUserDetails;
+    private MyUserDetailService myUserDetails;
 
 
     public String createToken(String username, List<Role> roles) {
         Claims claims = Jwts.claims().setSubject(username);
+        // @TODO: make auth to be ["ROLE_ADMIN", "ROLE_CLIENT"]
         claims.put("auth", roles.stream()
-                .map(s -> new SimpleGrantedAuthority(s.getAuthority()))
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
+
+        System.out.println("???");
+
+//        claims.put("auth", roles.stream()
+//                .map(s -> new SimpleGrantedAuthority(s.getAuthority()))
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toList()));
 
         Date now = new Date();
         Date validity = new Date(now.getTime() + EXPIRATION_TIME);

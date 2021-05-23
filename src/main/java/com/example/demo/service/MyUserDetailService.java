@@ -9,28 +9,32 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserSecurityService implements UserDetailsService {
+public class MyUserDetailService implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // @TODO add permission
         final User user = userRepository.findByUsername(username);
 
         if (user == null) {
             throw new UsernameNotFoundException("User: " + username + " is not found");
         }
 
+//        List<GrantedAuthority> roles = user.getRoles().stream().filter(Objects::nonNull)
+//                .map(role -> new SimpleGrantedAuthority(role.getName()))
+//                .collect(Collectors.toList());
+
         return org.springframework.security.core.userdetails.User
                 .withUsername(username)
                 .password(user.getPassword())
-                .authorities(user.getRoles())
+                .authorities(user.getAuthorities())
                 .accountExpired(false)
                 .accountLocked(false)
                 .credentialsExpired(false)
                 .disabled(false)
                 .build();
-
     }
 }

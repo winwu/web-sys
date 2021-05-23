@@ -1,14 +1,19 @@
 package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Table(name = "users")
 @Entity
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,10 +32,7 @@ public class User {
     private String password;
 
     @Column(name = "is_enabled", nullable = false, columnDefinition = "TINYINT(1) default 1")
-    private Integer isEnabled = 1;
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    List<Role> roles;
+    private final Integer isEnabled = 1;
 
     public Integer getId() {
         return id;
@@ -64,6 +66,19 @@ public class User {
         this.password = password;
     }
 
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(
+                    name = "user_id", referencedColumnName = "id"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id"
+            )
+    )
+    private List<Role> roles;
+
     public List<Role> getRoles() {
         return roles;
     }
@@ -72,4 +87,49 @@ public class User {
         this.roles = roles;
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        List<Role> roles = this.getRoles();
+        for (Role role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+        }
+        return authorities;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return false;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("User[" +
+                        "id=%d, " +
+                        "username='%s', " +
+                        "email='%s', " +
+                        "roles='%s', " +
+                        "is_enabled='%s']",
+                id,
+                username,
+                email,
+                getRoles(),
+                isEnabled
+        );
+    }
 }
