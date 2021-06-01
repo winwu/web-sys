@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -74,6 +75,7 @@ public class ProductController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
+    @PreAuthorize("hasPermission('', 'product-write') or hasPermission('', 'product-all')")
     public ResponseEntity add(
             @RequestParam(value = "title") String title,
             @RequestParam(value = "subTitle", defaultValue = "") String subTitle,
@@ -121,6 +123,7 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PreAuthorize("hasPermission('', 'product-write') or hasPermission('', 'product-all')")
     public ResponseEntity update(
             @PathVariable("id") Long id,
             @RequestParam(value = "title") String title,
@@ -206,6 +209,7 @@ public class ProductController {
     }
 
     @RequestMapping(value = "{ids}", method = RequestMethod.DELETE)
+    @PreAuthorize("hasPermission('', 'product-delete') or hasPermission('', 'product-all')")
     public ResponseEntity delete(@PathVariable("ids") Long[] ids) {
         Map<String, Object> response = new HashMap<>();
         try {

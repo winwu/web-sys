@@ -5,6 +5,8 @@ import com.example.demo.exception.CustomException;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtTokenProvider;
 import com.example.demo.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +21,8 @@ import java.util.Map;
 
 @Service
 public class UserServiceImpl implements UserService {
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     @Autowired
     private UserRepository userRepository;
 
@@ -35,20 +39,23 @@ public class UserServiceImpl implements UserService {
     public String login(String username, String password) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            System.out.println(userRepository.findByUsername(username).getRoles());
             return jwtTokenProvider.createToken(username, userRepository.findByUsername(username).getRoles());
         } catch (AuthenticationException e) {
-            throw new CustomException("Invalid username or password", HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new CustomException(e.getMessage() + " | Invalid username or password", HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
 
     @Override
     public String signup(User user) {
-        if (!userRepository.existsByUsernameOrEmail(user.getUsername(), user.getEmail())) {
+        if (userRepository.existsByUsernameOrEmail(user.getUsername(), user.getEmail())) {
+            throw new CustomException("Sorry, username or email is already exist", HttpStatus.UNPROCESSABLE_ENTITY);
+        } else if (user.getRoles() == null || user.getRoles().size() == 0) {
+            throw new CustomException("Roles should be assigned when creating a new user", HttpStatus.UNPROCESSABLE_ENTITY);
+        } else {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
             return jwtTokenProvider.createToken(user.getUsername(), user.getRoles());
-        } else {
-            throw new CustomException("Sorry, username or email is already exist", HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
 

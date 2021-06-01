@@ -101,7 +101,7 @@ public class NewsController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasPermission('', 'news-write')")
     public ResponseEntity add(
             @RequestParam(value = "title") String title,
             @RequestParam(value = "content") String content,
@@ -127,7 +127,7 @@ public class NewsController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasPermission('', 'news-write') or hasPermission('', 'news-all')")
     public ResponseEntity update(
             @PathVariable("id") Long id,
             @RequestParam(value = "title") String title,
@@ -173,7 +173,7 @@ public class NewsController {
             @ApiResponse(code = 403, message = "Permission denied")
     })
     @RequestMapping(value = "/{ids}", method = RequestMethod.DELETE)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasPermission('', 'news-delete') or hasPermission('', 'news-all')")
     public ResponseEntity delete(@PathVariable("ids") Long[] ids) {
         Map<String, Object> response = new HashMap<>();
         try {

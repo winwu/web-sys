@@ -24,7 +24,7 @@ public class UserController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Something went wrong, maybe missing RequestParams"),
-            @ApiResponse(code = 422, message = "Missing username or password")
+            @ApiResponse(code = 422, message = "Incorrect or missing username or password")
     })
     public ResponseEntity<Map<String, Object>> login(@RequestParam String username, @RequestParam String password) {
         Map<String, Object> response = new HashMap<>();
@@ -37,6 +37,7 @@ public class UserController {
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     public ResponseEntity signup(@RequestBody User user) {
+        System.out.println(user);
         Map<String, Object> response = new HashMap<>();
         String token = userService.signup(user);
         response.put("code", HttpStatus.OK.value());
@@ -45,26 +46,24 @@ public class UserController {
         return new ResponseEntity(response, HttpStatus.OK);
     }
 
+
     @ApiOperation(value = "delete", authorizations = {@Authorization(value = "apiKey")})
     @RequestMapping(value = "/{username}", method = RequestMethod.DELETE)
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasPermission('', 'admin-users-delete') or hasPermission('', 'admin-users-all')")
     public String delete(@PathVariable String username) {
         userService.delete(username);
         return username;
     }
 
     // search
-
     @ApiOperation(value = "me", authorizations = {@Authorization(value = "apiKey")})
     @RequestMapping(value = "/me", method = RequestMethod.GET)
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CLIENT')")
     public User me(HttpServletRequest req) {
         return userService.me(req);
     }
 
     @ApiOperation(value = "parse", authorizations = {@Authorization(value = "apiKey")})
     @RequestMapping(value = "/parse", method = RequestMethod.GET)
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CLIENT')")
     public ResponseEntity<Map<String, Object>> parseJWT(HttpServletRequest req) {
         Map<String, Object> response = userService.parse(req);
         return new ResponseEntity(response, HttpStatus.OK);
@@ -72,7 +71,6 @@ public class UserController {
 
     @ApiOperation(value = "refresh", authorizations = {@Authorization(value = "apiKey")})
     @RequestMapping(value = "/refresh", method = RequestMethod.GET)
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CLIENT')")
     public ResponseEntity refresh(HttpServletRequest req) {
         Map<String, Object> response = new HashMap<>();
         String token = userService.refresh(req.getRemoteUser());

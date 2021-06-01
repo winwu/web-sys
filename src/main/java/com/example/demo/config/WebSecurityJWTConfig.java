@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.security.CustomPermissionEvaluator;
 import com.example.demo.security.JwtTokenFilterConfigurer;
 import com.example.demo.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,16 +16,28 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 
 @Configuration
+
 // 指定為 web security 的設定
 @EnableWebSecurity
-// 啟用安全方法設定
+/**
+ * 啟用安全方法設定:
+ * jsr250Enabled | prePostEnabled | securedEnabled 三種可選
+ *
+ * jsr250Enabled 可以使用: @DenyAll, @RolesAllowed, @PermitAll
+ * prePostEnabled 可以使用: @PreAuthorize, @PostAuthorize, @PreFilter, @PostFilter
+ * securedEnabled 可以使用: @Secured
+ */
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 
 public class WebSecurityJWTConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private CustomPermissionEvaluator customPermissionEvaluator;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -56,6 +69,9 @@ public class WebSecurityJWTConfig extends WebSecurityConfigurerAdapter {
 
         // optional if need browser to test API
         // http.httpBasic();
+
+        // override hasPermission implement on @PreAuthorize
+        http.authorizeRequests().expressionHandler(defaultWebSecurityExpressionHandler());
     }
 
     @Override
@@ -82,5 +98,12 @@ public class WebSecurityJWTConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public DefaultWebSecurityExpressionHandler defaultWebSecurityExpressionHandler() {
+        DefaultWebSecurityExpressionHandler defaultWebSecurityExpressionHandler = new DefaultWebSecurityExpressionHandler();
+        defaultWebSecurityExpressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+        return defaultWebSecurityExpressionHandler;
     }
 }
