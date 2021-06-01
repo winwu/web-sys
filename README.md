@@ -3,14 +3,65 @@
 ## My Environments:
 
 * Editor: IDEA
+    * install a plugin: click File -> Settings -> plugins
+    * useful plugins: 
+        * Spring Assistant
+    
 * Java version: 11 or later
+    1. install JDK
+    2. set up environment path for JDK
+    3. type `java -version` and `javac -version` to make sure these 2 commands are installed.
+    
 * Apache Maven version: 3.6.3
+    * maven install dependencies based on pom.xml <dependency>. All the dependency files will put in the folder named ".m2", like `/Users/[username]/.m2/repository`.
+    1. install Maven
+    2. set up environment path for Maven. (e.g `export PATH="$PATH:/Users/win/project/apache-maven-3.6.3/bin"`)
+    3. type `mvn -v` to make sure it's installed.
+    
 * Spring Boot 2.4.4 RELEASE
+  
 * MySQL Database
 
 ## Dependencies Required
 
 Please check `pox.xml` file which includes the required dependencies.
+
+## Packaging and execute
+
+
+### Packing
+1. Open IDEA
+2. File > Project structure > Artifacts, click "+", choose "JAR", choose "From modules with dependencies". 
+3. Choose Main Class "WebsysApplication"
+4. Click "OK" twice
+5. Click the "Maven" panel on the right side, click "Lifecycle > package" then wait for the packaging process. Once it finished, will show something like this:
+
+(ref: README/packaging1.png, packaging2.png)
+
+```
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ demo ---
+[INFO] Building jar: /Users/[username]/project/websys/target/demo-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot-maven-plugin:2.4.4:repackage (repackage) @ demo ---
+[INFO] Replacing main artifact with repackaged archive
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+```
+
+### Execute
+
+use the jar location path, and run:
+
+```
+java -jar demo-0.0.1-SNAPSHOT.jar 
+```
+
+
+
+
+
+
 
 ## Some Setups:
 
