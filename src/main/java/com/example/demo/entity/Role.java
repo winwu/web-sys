@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "roles")
@@ -10,7 +11,7 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // e.g. ROLE_ADMIN, ROLE_CLIENT
+    // e.g. ROLE_SYSTEM_ADMIN, ROLE_ADMIN, ROLE_ADMIN_MARKETING, etc.
     private String name;
 
     private String description;
@@ -39,23 +40,33 @@ public class Role {
         this.description = desc;
     }
 
-//    @ManyToMany(fetch = FetchType.EAGER)
-//    @JoinTable(name = "permissions", joinColumns = {
-//            @JoinColumn(name = "role_id")
-//        },
-//            inverseJoinColumns = {@JoinColumn(name = "permission_id")}
-//    )
-//    private List<Permission> permission;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "roles_permissions",
+            joinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "permission_id", referencedColumnName = "id"))
+    private List<Permission> permissions;
+
+    public List<Permission> getPermissions() {
+        return permissions;
+    }
+    public void setPermissions(List<Permission> permissions) {
+        this.permissions = permissions;
+    }
 
     @Override
     public String toString() {
         return String.format("Role[" +
                         "id=%d, " +
                         "name='%s', " +
-                        "description='%s']",
+                        "description='%s', + " +
+                        "permissions='%s']",
                 id,
                 name,
-                description
+                description,
+                permissions
         );
     }
 }

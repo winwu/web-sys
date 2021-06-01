@@ -35,9 +35,10 @@ public class UserServiceImpl implements UserService {
     public String login(String username, String password) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            System.out.println(userRepository.findByUsername(username).getRoles());
             return jwtTokenProvider.createToken(username, userRepository.findByUsername(username).getRoles());
         } catch (AuthenticationException e) {
-            throw new CustomException("Invalid username or password", HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new CustomException(e.getMessage() + " | Invalid username or password", HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
 

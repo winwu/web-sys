@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -7,14 +8,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Table(name = "users")
 @Entity
 public class User implements UserDetails {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -77,12 +76,16 @@ public class User implements UserDetails {
                     name = "role_id", referencedColumnName = "id"
             )
     )
-    private List<Role> roles;
 
+    // To hide roles in API response
+    // use @JsonIgnore on class member and getter, use JsonProperty on setter method
+    @JsonIgnore
+    private List<Role> roles;
+    @JsonIgnore
     public List<Role> getRoles() {
         return roles;
     }
-
+    @JsonProperty
     public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
@@ -116,6 +119,30 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    // 用 transient 讓這個 permission 不會建立在 table 的欄位
+    @Transient
+    private String[] permissionNames;
+    public String[] getPermissionsNames() {
+        String[] permissions = getRoles().stream().filter(Objects::nonNull)
+                .map(Role::getPermissions).flatMap(Collection::stream)
+                .map(permission-> permission.getName())
+                .distinct()
+                .toArray(String[]::new);
+        return permissions;
+    }
+
+    @Transient
+    private List<Permission> permissions;
+    public List<Permission> getPermissions() {
+        List<Permission> permissions = getRoles().stream().filter(Objects::nonNull)
+            .map(Role::getPermissions).flatMap(Collection::stream)
+            .distinct()
+            .collect(Collectors.toList());
+        return permissions;
+    }
+
+
 
     @Override
     public String toString() {

@@ -2,7 +2,6 @@ package com.example.demo.security;
 
 import com.example.demo.entity.Role;
 import com.example.demo.exception.CustomException;
-import com.example.demo.service.MyUserDetailService;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
