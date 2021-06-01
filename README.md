@@ -58,45 +58,37 @@ java -jar demo-0.0.1-SNAPSHOT.jar
 ```
 
 
-
-
-
-
-
-## Some Setups:
+## Local Setups
 
 1. Due to the need to hide some environment setting from local, the `application.properties` file is default ignored. Please copy `src/main/resources/application.properties.example` to `src/main/resources/application.properties` and update the MySQL info, such as user and password.
 
 
-## The Swagger
 
-After boot this web application, the swagger page is available on  `http://localhost:{YOUR_PORT}/swagger-ui.html`
+## Other commands
 
-
-## TODOs
-
-https://stackoverflow.com/questions/51218227/user-class-for-spring-security-application
-https://howtodoinjava.com/spring-security/custom-userdetailsservice-example-for-spring-3-security/
-
-## Dump mysql schema
-
+* Dump mysql schema
 ```
 mysqldump -u user -h localhost --no-data -p websys > database.sql
 ```
 
 
-## APIs
+--- 
 
-Request example:
+## API Overviews
+
+METHOD        | ENDPOINT  
+--------------|:--------------|
+POST          | /users/signup
+POST          | /users/login
+GET           | /users/me
+GET           | /users/parse
+GET           | /users/refresh
+DEL           | /users/{USERNAME}
+
+
+## API Request example
 
 ### User
-
-* [POST] /users/signup 
-* [POST] /users/login
-* [GET]  /users/me
-* [GET]  /users/parse
-* [GET]  /users/refresh
-* [DEL]  /users/{USERNAME}
 
 #### [POST] /users/signup
 
@@ -233,3 +225,8 @@ Response format:
     "iat": 1621871998
 }
 ```
+
+
+## The Swagger
+
+After boot this web application, the swagger page is available on  `http://localhost:{YOUR_PORT}/swagger-ui.html`
