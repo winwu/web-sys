@@ -14,6 +14,8 @@ public interface UserService {
 
     // public User search(String username);
 
+    public User findByUsername(String username);
+
     public User me(HttpServletRequest req);
 
     public Map<String, Object> parse(HttpServletRequest req);

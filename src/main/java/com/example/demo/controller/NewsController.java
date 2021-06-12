@@ -4,6 +4,7 @@ import com.example.demo.entity.News;
 import com.example.demo.exception.CustomException;
 import com.example.demo.repository.NewsRepository;
 import com.example.demo.service.FileService;
+import com.example.demo.service.impl.NewsServiceImpl;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,6 +34,12 @@ public class NewsController {
 
     @Autowired
     private NewsRepository repository;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private NewsServiceImpl newsService;
 
     @ApiOperation(value = "Retrieve all news list")
     @ApiImplicitParams({
@@ -91,10 +99,10 @@ public class NewsController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ResponseEntity get(@PathVariable("id") Integer id) {
         Map<String, Object> response = new HashMap<>();
-
-        News news = repository
-                .findById(Long.valueOf(id))
-                .orElseThrow(() -> new CustomException("Not found", HttpStatus.NOT_FOUND));
+        News news = newsService.findNewsById(Long.valueOf(id));
+        if (news == null) {
+            throw new CustomException("Not found", HttpStatus.NOT_FOUND);
+        }
         response.put("code", "SUCCESS");
         response.put("data", news);
         return new ResponseEntity<>(response, HttpStatus.OK);

@@ -1,5 +1,6 @@
 package com.example.demo.service.impl;
 
+import com.example.demo.entity.Permission;
 import com.example.demo.entity.User;
 import com.example.demo.exception.CustomException;
 import com.example.demo.repository.UserRepository;
@@ -8,6 +9,8 @@ import com.example.demo.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,12 +19,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Map;
 
 
 @Service
+@CacheConfig(cacheNames="user")
 public class UserServiceImpl implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Autowired
     private UserRepository userRepository;
@@ -39,7 +47,22 @@ public class UserServiceImpl implements UserService {
     public String login(String username, String password) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-            System.out.println(userRepository.findByUsername(username).getRoles());
+            User user = userRepository.findByUsername(username);
+
+            logger.info("有人登入啦");
+            logger.warn("這個warn");
+
+            System.out.println("---------------我就是想要試一下------------------");
+            redisTemplate.opsForValue().set("permission::" + username, user.getPermissions());
+            redisTemplate.opsForList().leftPushAll("permissionsNames::" + username, user.getPermissionsNames());
+
+            List<Permission> permissions = (List<Permission>) redisTemplate.opsForValue().get("permission::" + username);
+            List permissionNames = redisTemplate.opsForList().range("permissionsNames::" + username, 0, -1);
+            logger.info("result:{}", permissions);
+            logger.info("--------------有問題的-----------------");
+            logger.info("result:{}", permissionNames);
+            System.out.println("---------------我就是想要試一下------------------");
+
             return jwtTokenProvider.createToken(username, userRepository.findByUsername(username).getRoles());
         } catch (AuthenticationException e) {
             throw new CustomException(e.getMessage() + " | Invalid username or password", HttpStatus.UNPROCESSABLE_ENTITY);
@@ -64,6 +87,13 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteByUsername(username);
     }
 
+    @Override
+    // @Cacheable(key = "#p0")
+    public User findByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        // redisTemplate.opsForValue().set("usercustom::" + username, user);
+        return user;
+    }
 //    @Override
 //    public User search(String username) {
 //        User user = userRepository.findByUsername(username);
