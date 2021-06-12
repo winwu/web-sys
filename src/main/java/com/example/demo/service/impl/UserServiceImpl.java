@@ -49,19 +49,9 @@ public class UserServiceImpl implements UserService {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
             User user = userRepository.findByUsername(username);
 
-            logger.info("有人登入啦");
-            logger.warn("這個warn");
-
-            System.out.println("---------------我就是想要試一下------------------");
+            // store permission in redis
             redisTemplate.opsForValue().set("permission::" + username, user.getPermissions());
             redisTemplate.opsForList().leftPushAll("permissionsNames::" + username, user.getPermissionsNames());
-
-            List<Permission> permissions = (List<Permission>) redisTemplate.opsForValue().get("permission::" + username);
-            List permissionNames = redisTemplate.opsForList().range("permissionsNames::" + username, 0, -1);
-            logger.info("result:{}", permissions);
-            logger.info("--------------有問題的-----------------");
-            logger.info("result:{}", permissionNames);
-            System.out.println("---------------我就是想要試一下------------------");
 
             return jwtTokenProvider.createToken(username, userRepository.findByUsername(username).getRoles());
         } catch (AuthenticationException e) {
