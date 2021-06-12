@@ -22,6 +22,16 @@
   
 * MySQL Database
 
+* Redis version 6.2.4
+  * install redis by Brew
+  1. brew update
+  2. brew install redis
+  
+  * Run Redis server `brew services start redis`
+  * Stop Redis server `brew services stop redis`
+  * Redis client `redis-cli`
+  
+
 ## Dependencies Required
 
 Please check `pox.xml` file which includes the required dependencies.
@@ -230,3 +240,7 @@ Response format:
 ## The Swagger
 
 After boot this web application, the swagger page is available on  `http://localhost:{YOUR_PORT}/swagger-ui.html`
+
+## How to and some references:
+
+* https://stackoverflow.com/questions/53822337/spring-requestbody-without-using-a-pojo

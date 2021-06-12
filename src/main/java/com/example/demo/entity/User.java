@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -8,12 +9,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Table(name = "users")
 @Entity
-public class User implements UserDetails {
+
+// @TODO: How to cache User entity with ManyToMany properties and getAuthorities in redis?
+// without JsonIgnoreProperties, it will occurred error like:
+// Could not read JSON: Unrecognized field \"enabled\" (class com.example.demo.entity.User), not marked as ignorable (7 known properties: \"authorities\", \"permissions\", \"username\", \"id\", \"email\", \"roles\", \"password\"])\n at [Source: (byte[])\"{\"@class\":\"com.example.demo.entity.User
+// @JsonIgnoreProperties(ignoreUnknown = true)
+
+public class User implements UserDetails, Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -31,7 +39,7 @@ public class User implements UserDetails {
     private String password;
 
     @Column(name = "is_enabled", nullable = false, columnDefinition = "TINYINT(1) default 1")
-    private final Integer isEnabled = 1;
+    private Integer isEnabled = 1;
 
     public Integer getId() {
         return id;
@@ -76,7 +84,6 @@ public class User implements UserDetails {
                     name = "role_id", referencedColumnName = "id"
             )
     )
-
     // To hide roles in API response
     // use @JsonIgnore on class member and getter, use JsonProperty on setter method
     @JsonIgnore
@@ -99,6 +106,7 @@ public class User implements UserDetails {
         }
         return authorities;
     }
+
 
     @Override
     public boolean isAccountNonExpired() {
@@ -141,7 +149,6 @@ public class User implements UserDetails {
             .collect(Collectors.toList());
         return permissions;
     }
-
 
 
     @Override
