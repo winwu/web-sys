@@ -38,3 +38,9 @@ spring.redis.pool.min-idle=0
 # timeout (ms)
 spring.redis.timeout=5000
 
+# Elasticsearch configuration
+# cluster name should match with the "cluster_name" on http://127.0.0.1:9200/
+spring.data.elasticsearch.cluster-name=elasticsearch_win
+spring.data.elasticsearch.cluster-nodes=127.0.0.1:9300
+spring.data.elasticsearch.repositories.enable=true
+
