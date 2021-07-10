@@ -4,7 +4,9 @@ import com.example.demo.entity.News;
 import com.example.demo.exception.CustomException;
 import com.example.demo.repository.NewsRepository;
 import com.example.demo.service.FileService;
+import com.example.demo.service.impl.AuditLogServiceImpl;
 import com.example.demo.service.impl.NewsServiceImpl;
+import com.google.gson.Gson;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.redis.core.RedisTemplate;
+//import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +29,9 @@ import java.util.*;
 @RequestMapping("/api/news")
 public class NewsController {
     @Autowired
+    AuditLogServiceImpl auditLogService;
+
+    @Autowired
     FileService fileService;
 
     @Value("${upload.path}")
@@ -35,8 +40,8 @@ public class NewsController {
     @Autowired
     private NewsRepository repository;
 
-    @Autowired
-    private RedisTemplate redisTemplate;
+//    @Autowired
+//    private RedisTemplate redisTemplate;
 
     @Autowired
     private NewsServiceImpl newsService;
@@ -114,6 +119,7 @@ public class NewsController {
             @RequestParam(value = "title") String title,
             @RequestParam(value = "content") String content,
             @RequestParam(value = "image", required = false) MultipartFile image) {
+        Gson gson = new Gson();
         Map<String, Object> response = new HashMap<>();
 
         News news = new News();
@@ -130,6 +136,7 @@ public class NewsController {
         }
 
         repository.save(news);
+        auditLogService.create("", gson.toJson(news), "news", "create news");
         response.put("code", "SUCCESS");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -143,6 +150,7 @@ public class NewsController {
             @RequestParam(value = "isDeleteImage", required = false) String isDeleteImage,
             @RequestParam(value = "image", required = false) MultipartFile image
     ) {
+        Gson gson = new Gson();
         Map<String, Object> response = new HashMap<>();
         Optional<News> newsOptional = repository.findById(id);
 
@@ -151,6 +159,7 @@ public class NewsController {
         }
 
         try {
+            String oldNews = gson.toJson(newsOptional.get());
             News news = newsOptional.get();
             news.setTitle(title);
             news.setContent(content);
@@ -168,6 +177,7 @@ public class NewsController {
                 }
             }
             repository.save(news);
+            auditLogService.create(oldNews, gson.toJson(news), "news", "update news");
             response.put("code", "SUCCESS");
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
@@ -183,8 +193,10 @@ public class NewsController {
     @RequestMapping(value = "/{ids}", method = RequestMethod.DELETE)
     @PreAuthorize("hasPermission('', 'news-delete') or hasPermission('', 'news-all')")
     public ResponseEntity delete(@PathVariable("ids") Long[] ids) {
+        Gson gson = new Gson();
         Map<String, Object> response = new HashMap<>();
         try {
+            auditLogService.create(gson.toJson(ids), "", "news", "delete news");
             repository.deleteByIdIn(Arrays.asList(ids));
             response.put("code", "SUCCESS");
             return new ResponseEntity<>(response, HttpStatus.OK);

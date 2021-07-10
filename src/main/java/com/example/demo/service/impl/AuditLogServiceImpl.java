@@ -21,7 +21,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     AuditLogRepository auditLogRepository;
 
     @Override
-    public void create(String oldContent, String newContent, String eventType) {
+    public void create(String oldContent, String newContent, String eventType, String message) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (!auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
             logger.error("Unauthenticated user");
@@ -31,7 +31,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         String userName = auth.getName();
         Date dNow = new Date();
 
-        AuditLog log = new AuditLog(oldContent, newContent, eventType, userName, dNow);
+        AuditLog log = new AuditLog(oldContent, newContent, eventType, userName, message, dNow);
         logger.info("create audit log {}", log);
 
         try {

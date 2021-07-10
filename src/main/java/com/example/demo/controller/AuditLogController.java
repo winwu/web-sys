@@ -50,6 +50,6 @@ public class AuditLogController {
 
     @RequestMapping(value = "test", method = RequestMethod.GET)
     public void testCreate() {
-        auditLogService.create("old content", "new content", "testing");
+        auditLogService.create("old content", "new content", "testing", "testing msg");
     }
 }

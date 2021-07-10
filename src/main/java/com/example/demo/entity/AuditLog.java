@@ -24,16 +24,20 @@ public class AuditLog implements Serializable {
     @Field(type = FieldType.Keyword)
     private String eventType;
 
+    @Field(type = FieldType.Text)
+    private String message;
+
     private String userName;
 
     @Field(type=FieldType.Date)
     private Date createdAt;
 
-    public AuditLog(String oldContent, String newContent, String eventType, String userName, Date createdAt) {
+    public AuditLog(String oldContent, String newContent, String eventType, String userName, String message, Date createdAt) {
         this.oldContent = oldContent;
         this.newContent = newContent;
         this.eventType = eventType;
         this.userName = userName;
+        this.message = message;
         this.createdAt = createdAt;
     }
 
@@ -72,6 +76,13 @@ public class AuditLog implements Serializable {
     }
     public void setUserId(String userName) {
         this.userName = userName;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public Date getCreatedAt() {
