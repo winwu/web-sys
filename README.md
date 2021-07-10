@@ -1,6 +1,21 @@
 # Web-Sys Admin
 
-## My Environments:
+## Environments & setups:
+
+### Overview
+
+Language / Frameworks / Tools / Database | Version 
+--- | --- |
+Java | 11.0.2 or later |
+Javac | 11.0.2 or later |
+Apache Maven | 3.6.3 |
+Spring Boot | 2.4.4 |
+MySQL | 8.0.23 |
+Redis | 6.2.4 |
+elasticsearch | 7.13.1 |
+logstash | 7.13.1 |
+kibana | 7.13.1 |
+
 
 * Editor: IDEA
     * install a plugin: click File -> Settings -> plugins
@@ -13,7 +28,7 @@
     3. type `java -version` and `javac -version` to make sure these 2 commands are installed.
     
 * Apache Maven (version: 3.6.3)
-    * maven install dependencies based on pom.xml <dependency>. All the dependency files will put in the folder named ".m2", like `/Users/[username]/.m2/repository`.
+    * maven install dependencies based on pom.xml <dependency>. All the dependency files put in the folder named ".m2", like `/Users/[username]/.m2/repository`.
     1. install Maven
     2. set up environment path for Maven. (e.g `export PATH="$PATH:/Users/win/project/apache-maven-3.6.3/bin"`)
     3. type `mvn -v` to make sure it's installed.
@@ -53,6 +68,7 @@
     * [install via homebrew](https://www.elastic.co/guide/en/kibana/current/brew.html)
     * related commands:
       * brew install elastic/tap/kibana-full
+      * brew services start kibana-full
     * after start, `http://localhost:5601` should be available.
     * test:
       1. access http://localhost:5601/app/dev_tools#/console
@@ -98,7 +114,8 @@ java -jar demo-0.0.1-SNAPSHOT.jar
 
 ## Local Setups
 
-1. Due to the need to hide some environment setting from local, the `application.properties` file is default ignored. Please copy `src/main/resources/application.properties.example` to `src/main/resources/application.properties` and update the MySQL info, such as user and password.
+Some unnecessary local information needs to be hidden so that the `application.properties` file ignored by default.
+Please copy `src/main/resources/application.properties.example` to `src/main/resources/application.properties` and update some of needed info such as user and password by your preferences.
 
 
 
