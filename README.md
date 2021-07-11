@@ -164,6 +164,8 @@ Request Body (application/json)
 
 RequestParam (application/x-www-form-urlencoded)
 
+(all default username please reference data.sql) 
+
 ```
 username: "admin"
 password: "12345678"

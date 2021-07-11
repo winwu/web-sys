@@ -4,7 +4,7 @@ insert into roles (id, name, description) values ('2', 'ROLE_ADMIN', 'registered
 insert into roles (id, name, description) values ('3', 'ROLE_ADMIN_MARKETING', 'marketing team member');
 insert into roles (id, name, description) values ('4', 'ROLE_ADMIN_SALES', 'sales team member');
 
---initial default user: system admin, general admin, marketing admin, sales admin
+--initial default user: system admin, general admin, marketing admin, sales admin, default pwd is 12345678
 insert into users (id, email, is_enabled, password, username) values ('1', 'superadmin@test.test', '1', '$2a$12$1JmOxwJPvd6uDigjVQUYkuZmUqC1X83IKsJxDNmsPvEiExgltNp6y', 'superadmin');
 insert into users_roles (user_id, role_id) values (1, 1);
 
