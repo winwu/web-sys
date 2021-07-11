@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.User;
+import com.example.demo.service.impl.AuditLogServiceImpl;
 import com.example.demo.service.impl.UserServiceImpl;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class UserController {
     @Autowired
     private UserServiceImpl userService;
 
+    @Autowired
+    private AuditLogServiceImpl auditLogService;
+
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Something went wrong, maybe missing RequestParams"),
@@ -32,6 +36,7 @@ public class UserController {
         response.put("code", HttpStatus.OK.value());
         response.put("token", token);
         response.put("message", "登入成功");
+        auditLogService.create("", username, "auth", "login");
         return new ResponseEntity(response, HttpStatus.OK);
     }
 
@@ -43,6 +48,7 @@ public class UserController {
         response.put("code", HttpStatus.OK.value());
         response.put("token", token);
         response.put("message", "註冊成功");
+        auditLogService.create("", user.getUsername(), "auth", "signup");
         return new ResponseEntity(response, HttpStatus.OK);
     }
 
@@ -51,6 +57,7 @@ public class UserController {
     @RequestMapping(value = "/{username}", method = RequestMethod.DELETE)
     @PreAuthorize("hasPermission('', 'admin-users-delete') or hasPermission('', 'admin-users-all')")
     public String delete(@PathVariable String username) {
+        auditLogService.create(username, "", "auth", "deleted");
         userService.delete(username);
         return username;
     }

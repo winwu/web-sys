@@ -23,8 +23,13 @@ public class AuditLogServiceImpl implements AuditLogService {
     @Override
     public void create(String oldContent, String newContent, String eventType, String message) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (!auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
-            logger.error("Unauthenticated user");
+        if (!auth.isAuthenticated()) {
+            logger.info("Unauthenticated user");
+            return;
+        }
+
+        if (auth instanceof AnonymousAuthenticationToken && eventType != "auth") {
+            logger.info("Anonymous user is not doing manipulate of auth related executions, such as sign-in");
             return;
         }
 
