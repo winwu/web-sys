@@ -5,7 +5,11 @@ import com.example.demo.entity.ProductSpecs;
 import com.example.demo.exception.CustomException;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ProductSpecRepository;
+import com.example.demo.service.impl.AuditLogServiceImpl;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +32,9 @@ public class ProductController {
 
     @Autowired
     ProductSpecRepository productSpecRepository;
+
+    @Autowired
+    AuditLogServiceImpl auditLogService;
 
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> productList(
@@ -85,6 +92,8 @@ public class ProductController {
             @RequestParam(value = "bannerImg", required = false) MultipartFile bannerImg,
             @RequestParam(value = "coverImg", required = false) MultipartFile coverImg) {
 
+        // FIX ME see issue #25
+        Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").create();
         Map<String, Object> response = new HashMap<>();
 
         Product product = new Product();
@@ -109,7 +118,6 @@ public class ProductController {
         product = repository.save(product);
 
         if (specs != null) {
-            Gson gson = new Gson();
             ProductSpecs[] specsArray = gson.fromJson(specs, ProductSpecs[].class);
             for (ProductSpecs spec : specsArray) {
                 spec.setProduct(product);
@@ -119,6 +127,7 @@ public class ProductController {
         }
 
         response.put("code", "SUCCESS");
+        auditLogService.create("", gson.toJson(product), "product", "create product");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -136,8 +145,31 @@ public class ProductController {
             @RequestParam(value = "isDeleteBanner", required = false) String isDeleteBanner,
             @RequestParam(value = "isDeleteCover", required = false) String isDeleteCover
     ) {
+        // FIX ME see issue #25
+        Gson gson = new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+                .addSerializationExclusionStrategy(new ExclusionStrategy() {
+                    // to avoid nested exception, exclude specs field in AuditLog
+                    @Override
+                    public boolean shouldSkipField(FieldAttributes f) {
+                        return f.getName().toLowerCase().contains("specs");
+                    }
+
+                    @Override
+                    public boolean shouldSkipClass(Class<?> aClass) {
+                        return false;
+                    }
+                })
+                .create();
+
         Map<String, Object> response = new HashMap<>();
-        Product product = repository.getOne(id);
+        Optional<Product> productOptional = repository.findById(id);
+        if (productOptional.isEmpty()) {
+            throw new CustomException("Entity is not exists", HttpStatus.BAD_REQUEST);
+        }
+
+        Product product = productOptional.get();
+        String oldProduct = gson.toJson(product);
 
         product.setTitle(title);
         product.setSubTitle(subTitle);
@@ -173,7 +205,6 @@ public class ProductController {
                 productSpecRepository.deleteByProductId(product.getId());
             } else {
                 // create or update or delete specs
-                Gson gson = new Gson();
                 ProductSpecs[] requestSpecs = gson.fromJson(specs, ProductSpecs[].class);
                 System.out.println("requestSpecs:" + requestSpecs.toString());
 
@@ -200,6 +231,7 @@ public class ProductController {
                 }
             }
             response.put("code", "SUCCESS");
+            auditLogService.create(oldProduct, gson.toJson(product), "product", "update product");
         } catch (Exception e) {
             response.put("code", "FAILURE");
             response.put("message", e.getMessage());
@@ -211,10 +243,12 @@ public class ProductController {
     @RequestMapping(value = "{ids}", method = RequestMethod.DELETE)
     @PreAuthorize("hasPermission('', 'product-delete') or hasPermission('', 'product-all')")
     public ResponseEntity delete(@PathVariable("ids") Long[] ids) {
+        Gson gson = new Gson();
         Map<String, Object> response = new HashMap<>();
         try {
             repository.deleteByIdIn(Arrays.asList(ids));
             response.put("code", "SUCCESS");
+            auditLogService.create(gson.toJson(ids), "", "product", "delete product");
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             response.put("code", "FAILURE");
