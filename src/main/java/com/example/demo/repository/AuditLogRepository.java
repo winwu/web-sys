@@ -9,9 +9,11 @@ import java.util.List;
 
 @Repository
 public interface AuditLogRepository extends ElasticsearchRepository<AuditLog, String> {
-    List<AuditLog> findByUserName(String userName);
+    List<AuditLog> findByUserNameOrderByCreatedAtDesc(String userName);
+    // List<AuditLog> findByUserName(String userName);
 
-    List<AuditLog> findByEventType(String eventType);
+    List<AuditLog> findByEventTypeOrderByCreatedAtDesc(String eventType);
+    // List<AuditLog> findByEventType(String eventType);
 
     // TODO search by date range
 }

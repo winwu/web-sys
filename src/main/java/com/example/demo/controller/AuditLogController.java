@@ -46,7 +46,7 @@ public class AuditLogController {
         if (log.isEmpty()) {
             throw new CustomException("Not found", HttpStatus.NOT_FOUND);
         }
-        if (log.get().getUserName().equals(userName) == false) {
+        if (!log.get().getUserName().equals(userName)) {
             throw new CustomException("Unauthorized log", HttpStatus.FORBIDDEN);
         }
         return new ResponseEntity<>(log, HttpStatus.OK);
@@ -54,15 +54,15 @@ public class AuditLogController {
 
     @RequestMapping(value = "/eventType/{eventType}", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_SYSTEM_ADMIN')")
-    public ResponseEntity getAuditByEventType(@PathVariable("eventType") String eventType) {
-        List<AuditLog> logs = auditLogRepository.findByEventType(eventType);
+    public ResponseEntity<?> getAuditByEventType(@PathVariable("eventType") String eventType) {
+        List<AuditLog> logs = auditLogRepository.findByEventTypeOrderByCreatedAtDesc(eventType);
         return new ResponseEntity<>(logs, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/username/{name}", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_SYSTEM_ADMIN')")
     public ResponseEntity getAuditByUserName(@PathVariable("name") String name) {
-        List<AuditLog> logs = auditLogRepository.findByUserName(name);
+        List<AuditLog> logs = auditLogRepository.findByUserNameOrderByCreatedAtDesc(name);
         return new ResponseEntity<>(logs, HttpStatus.OK);
     }
 
@@ -76,7 +76,7 @@ public class AuditLogController {
         String userName = request.getUserPrincipal().getName();
 
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
-        if (query.isEmpty() == false) {
+        if (!query.isEmpty()) {
             nativeSearchQueryBuilder.withQuery(QueryBuilders.multiMatchQuery(query, "oldContent", "newContent", "eventType", "message"));
         }
 
