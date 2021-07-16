@@ -39,7 +39,7 @@ public class User implements UserDetails, Serializable {
     private String password;
 
     @Column(name = "is_enabled", nullable = false, columnDefinition = "TINYINT(1) default 1")
-    private Integer isEnabled = 1;
+    private final Integer isEnabled = 1;
 
     public Integer getId() {
         return id;
@@ -88,10 +88,12 @@ public class User implements UserDetails, Serializable {
     // use @JsonIgnore on class member and getter, use JsonProperty on setter method
     @JsonIgnore
     private List<Role> roles;
+
     @JsonIgnore
     public List<Role> getRoles() {
         return roles;
     }
+
     @JsonProperty
     public void setRoles(List<Role> roles) {
         this.roles = roles;
@@ -131,10 +133,11 @@ public class User implements UserDetails, Serializable {
     // 用 transient 讓這個 permission 不會建立在 table 的欄位
     @Transient
     private String[] permissionNames;
+
     public String[] getPermissionsNames() {
         String[] permissions = getRoles().stream().filter(Objects::nonNull)
                 .map(Role::getPermissions).flatMap(Collection::stream)
-                .map(permission-> permission.getName())
+                .map(permission -> permission.getName())
                 .distinct()
                 .toArray(String[]::new);
         return permissions;
@@ -142,11 +145,12 @@ public class User implements UserDetails, Serializable {
 
     @Transient
     private List<Permission> permissions;
+
     public List<Permission> getPermissions() {
         List<Permission> permissions = getRoles().stream().filter(Objects::nonNull)
-            .map(Role::getPermissions).flatMap(Collection::stream)
-            .distinct()
-            .collect(Collectors.toList());
+                .map(Role::getPermissions).flatMap(Collection::stream)
+                .distinct()
+                .collect(Collectors.toList());
         return permissions;
     }
 

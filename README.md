@@ -302,7 +302,3 @@ Response format:
 ## The Swagger
 
 After boot this web application, the swagger page is available on  `http://localhost:{YOUR_PORT}/swagger-ui.html`
-
-## How to and some references:
-
-* https://stackoverflow.com/questions/53822337/spring-requestbody-without-using-a-pojo

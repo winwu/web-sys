@@ -23,15 +23,24 @@ public class Permission implements Serializable {
     public Integer getId() {
         return id;
     }
-    @JsonProperty
-    public void setId(Integer id) { this.id = id; }
 
-    public void setResource(String resource) { this.resource = resource; }
-    public String getResource() { return resource; }
+    @JsonProperty
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    public String getResource() {
+        return resource;
+    }
 
     public void setName(String name) {
         this.name = name;
     }
+
     public String getName() {
         return name;
     }

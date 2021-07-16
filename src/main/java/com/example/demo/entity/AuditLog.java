@@ -29,7 +29,7 @@ public class AuditLog implements Serializable {
 
     private String userName;
 
-    @Field(type=FieldType.Date)
+    @Field(type = FieldType.Date)
     private Date createdAt;
 
     public AuditLog(String oldContent, String newContent, String eventType, String userName, String message, Date createdAt) {
@@ -41,11 +41,13 @@ public class AuditLog implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public AuditLog() {}
+    public AuditLog() {
+    }
 
     public String getId() {
         return id;
     }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -53,6 +55,7 @@ public class AuditLog implements Serializable {
     public String getOldContent() {
         return oldContent;
     }
+
     public void setOldContent(String oldContent) {
         this.oldContent = oldContent;
     }
@@ -60,6 +63,7 @@ public class AuditLog implements Serializable {
     public String getNewContent() {
         return newContent;
     }
+
     public void setNewContent(String newContent) {
         this.newContent = newContent;
     }
@@ -67,6 +71,7 @@ public class AuditLog implements Serializable {
     public String getEventType() {
         return eventType;
     }
+
     public void setEventType(String eventType) {
         this.eventType = eventType;
     }
@@ -74,6 +79,7 @@ public class AuditLog implements Serializable {
     public String getUserName() {
         return userName;
     }
+
     public void setUserId(String userName) {
         this.userName = userName;
     }
@@ -81,6 +87,7 @@ public class AuditLog implements Serializable {
     public String getMessage() {
         return message;
     }
+
     public void setMessage(String message) {
         this.message = message;
     }
@@ -88,6 +95,7 @@ public class AuditLog implements Serializable {
     public Date getCreatedAt() {
         return createdAt;
     }
+
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }

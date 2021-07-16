@@ -27,7 +27,7 @@ public class FileServiceImpl implements FileService {
         System.out.println("Real Path to Uploads = " + dirPath);
 
         Long currentTime = System.currentTimeMillis();
-        String newName = currentTime.toString() + "_" + file.getOriginalFilename();
+        String newName = currentTime + "_" + file.getOriginalFilename();
 
         byte[] bytes = file.getBytes();
         String filePath = dirPath + newName;

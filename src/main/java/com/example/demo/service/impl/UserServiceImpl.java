@@ -24,7 +24,7 @@ import java.util.Map;
 
 
 @Service
-@CacheConfig(cacheNames="user")
+@CacheConfig(cacheNames = "user")
 public class UserServiceImpl implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 

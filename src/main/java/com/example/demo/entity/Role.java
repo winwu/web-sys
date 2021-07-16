@@ -53,6 +53,7 @@ public class Role implements Serializable {
     public List<Permission> getPermissions() {
         return permissions;
     }
+
     public void setPermissions(List<Permission> permissions) {
         this.permissions = permissions;
     }

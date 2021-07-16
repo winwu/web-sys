@@ -23,7 +23,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    @Cacheable(key = "#p0", unless="#result == null")
+    @Cacheable(key = "#p0", unless = "#result == null")
     public News findNewsById(long id) {
         return repository.findById(id);
     }
