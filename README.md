@@ -138,7 +138,22 @@ POST          | /users/login
 GET           | /users/me
 GET           | /users/parse
 GET           | /users/refresh
-DEL           | /users/{USERNAME}
+DEL           | /users/{username}
+GET           | /news
+GET           | /news/{id}
+POST          | /news
+PUT           | /news/{id}
+DELETE        | /news/{id}
+GET           | /products
+GET           | /products/{id}
+POST          | /products/
+PUT           | /products/{id}
+DELETE        | /products/{id}
+GET           | /audit
+GET           | /audit/search?page={page}&limit={10}&query={query}
+GET           | /audit/eventType/{event_type}
+GET           | /audit/username/{username}
+GET           | /audit/{id}
 
 
 ## API Request example
