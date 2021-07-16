@@ -58,6 +58,7 @@ public class AuditLogController {
     }
 
     @ApiOperation(value = "get AuditLog by eventType", notes = "role system admin ONLY")
+    @ApiImplicitParam(name="eventType", allowableValues = "auth, news, product")
     @RequestMapping(value = "/eventType/{eventType}", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ROLE_SYSTEM_ADMIN')")
     public ResponseEntity<?> getAuditByEventType(@PathVariable("eventType") String eventType) {
