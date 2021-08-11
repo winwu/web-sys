@@ -1,0 +1,75 @@
+version: "3.9"
+services:
+  # mysql container
+  mysql:
+    image: mysql:8.0.23
+    restart: always
+    # 運行此容器需要的環境變數, 參考 https://hub.docker.com/_/mysql/ 做設定
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: websys
+      MYSQL_USER: websys
+      MYSQL_PASSWORD: my-secret-pw
+    # 把 container 的 port 暴露給 local 使用, 對應 (HOST : container)
+    ports:
+      - 3306:3306
+
+  # redis container
+  # ref: https://registry.hub.docker.com/r/bitnami/redis#!
+  redis:
+    image: redis:6.2.4
+    restart: always
+    ports:
+      - 6379:6379
+    environment:
+      ALLOW_EMPTY_PASSWORD: 'yes'
+
+  # elk 設定比較複雜, 先隨便設定, 能夠在開發環境跑起來再來對應給 spring boot2
+  # ref: https://hub.docker.com/_/elasticsearch/
+  # ref: https://www.elastic.co/guide/en/elasticsearch/reference/7.14/docker.html
+  # elasticsearch container, 可以簡單理解為文字型的料庫
+  elastic:
+    image: elasticsearch:7.13.1
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+  # kibana container, 可以簡單理解為 elasticsearch 的查詢 GUI 介面
+  # ref: https://hub.docker.com/_/kibana
+  kibana:
+    image: kibana:7.13.1
+    ports:
+      - 5601:5601
+    environment:
+      SERVER_NAME: kibana
+      SERVER_HOST: kibana
+      ELASTICSEARCH_HOSTS: http://host.docker.internal:9200/
+    # 必須等到 elastic container 先跑完, 再跑 kibana 才不會出錯
+    depends_on:
+      - elastic
+
+  # ref: https://hub.docker.com/_/logstash
+  # logstash container, 可以簡單理解為爬蟲工具, 解析 log 並將資料送進 elastic
+  logstash:
+    image: logstash:7.13.1
+    ports:
+      - 5044:5044
+    environment:
+      ELASTIC_HOST: host.docker.internal:9200
+    # volumes 區塊用於描述讓 container 啟動時, 一些資料由 host 去取代 container 裡面的檔案或資料夾, 相對來說也能把 container 的資料夾同步到 host 的檔案或資料夾
+    # 先把設定的東西暴露給 host 做設定
+    volumes:
+      # ref: https://www.elastic.co/guide/en/logstash/current/docker-config.html
+      - type: bind
+        source: ./logstash/config/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      - type: bind
+        source: ./logstash/pipeline/
+        target: /usr/share/logstash/pipeline
+        read_only: true
+    depends_on:
+      - elastic
