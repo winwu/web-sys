@@ -1,0 +1,59 @@
+# 可以先把 debug 打開, 看一下 spring boot 底層的一些動作
+debug: true
+
+server:
+  # 可以用這種方式依據環境 ENV 變數去做設定, OS ENV 有設定 $PORT 就會用 $PORT 這個變數的設定, 沒有則預設 8080
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1/websys?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC&useSSL=true
+    username:
+    password:
+    # initialization-mode, 這個設定必須在 resource 目錄下有 data.sql
+    initialization-mode: always
+    # spring boot 2.x 的某個版本之後就會自動從 jdbc 連線設定去偵測要用什麼 driver 沒寫也沒差
+    #driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    # 這是運用 hibernate 的功能, 當 spring boot 啟動有掃描到 @Entity 就會建立對應的 SQL Schema(DDL)
+    # 通常開發環境我會建議用 update 就好了, 不然每次都 drop 有點浪費時間
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+    show-sql: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 15MB
+
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+    timeout: 5000
+    password:
+
+  data:
+    elasticsearch:
+      # cluster-name, cluster-nodes 要被拋棄不用了, 要再查一下文件
+      cluster-name: elasticsearch_win
+      cluster-nodes: 127.0.0.1:9300
+      repositories:
+        enabled: true
+
+# 暫時不確定的設定
+#  upload.path=.//upload//
+#  security.jwt.token.secret-key = ILoveMyJob
+# 30000 = 5 minutes
+# security.jwt.token.expire-length = 300000
