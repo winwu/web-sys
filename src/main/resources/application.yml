@@ -18,8 +18,9 @@ spring:
   jpa:
     # 這是運用 hibernate 的功能, 當 spring boot 啟動有掃描到 @Entity 就會建立對應的 SQL Schema(DDL)
     # 通常開發環境我會建議用 update 就好了, 不然每次都 drop 有點浪費時間
+    # 因為是透過 initialization-mode 去初始化資料, 所以暫時先用 create-drop
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5InnoDBDialect
@@ -52,7 +53,16 @@ spring:
       repositories:
         enabled: true
 
-# 暫時不確定的設定
+# customer 的設定
+security:
+  jwt:
+    token:
+      secret-key: 'ILoveMyJob'
+      expire-length: 300000
+
+upload:
+  path: './upload'
+
 #  upload.path=.//upload//
 #  security.jwt.token.secret-key = ILoveMyJob
 # 30000 = 5 minutes
