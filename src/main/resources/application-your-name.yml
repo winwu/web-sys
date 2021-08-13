@@ -1,0 +1,4 @@
+# spring boot 一開始會先讀 application.yml 的設定
+# 如果再啟動 spring boot 時有指定 java -jar -Dspring.profiles.active=your-name build/libs/*.jar
+# 就會在讀 application-your-name.yml 裡面的設定做覆蓋
+# 所以也可以用這種方式建立 application-uat.yml, application-prod.yml 來區分環境

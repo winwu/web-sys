@@ -1,0 +1,5 @@
+# ref: https://www.elastic.co/guide/en/logstash/current/logstash-settings-file.html
+pipeline:
+  batch:
+    size: 125
+    delay: 50
